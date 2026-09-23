@@ -1,25 +1,223 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>R.C.C. Refrigeración</title>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R.C.C. Refrigeración y Climatización</title>
 <style>
-body{font-family:Arial,sans-serif;margin:0;background:#f4f7f9;color:#17324d}header{background:#006f86;color:#fff;padding:20px;text-align:center}main{max-width:720px;margin:auto;padding:16px}.card{background:white;border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 2px 8px #0001}button{background:#007c91;color:white;border:0;border-radius:10px;padding:12px 16px;margin:5px;font-size:15px}input,textarea,select{width:100%;box-sizing:border-box;padding:11px;margin:5px 0 12px;border:1px solid #ccd6dc;border-radius:8px}.hidden{display:none}.tag{display:inline-block;background:#e2f2f5;padding:5px 9px;border-radius:8px;margin:3px}.item{border:1px solid #d9e1e5;border-radius:10px;padding:12px;margin:8px 0}
-</style></head><body>
-<header><h1>❄ R.C.C.</h1><div>Refrigeración y Climatización de Calidad</div></header>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f7f9;color:#17324d}
+header{background:#087d8f;color:#fff;padding:28px 16px;text-align:center}
+header h1{margin:0 0 22px;font-size:42px}
+header div{font-size:20px}
+main{max-width:720px;margin:auto;padding:16px}
+.card{background:#fff;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 2px 9px #0001}
+button{background:#07879a;color:#fff;border:0;border-radius:10px;padding:13px 16px;margin:6px 0;font-size:16px;width:100%}
+button.secondary{background:#587080}
+input,textarea,select{width:100%;box-sizing:border-box;padding:12px;margin:6px 0 14px;border:1px solid #cbd6dc;border-radius:8px;font-size:16px}
+textarea{min-height:100px}
+.item{border:1px solid #d7e0e4;border-radius:12px;padding:14px;margin:10px 0}
+.qr{text-align:center;padding:14px}
+.qr img{width:260px;height:260px;image-rendering:auto}
+.code{font-size:25px;font-weight:bold}
+.notice{background:#fff5d5;border-radius:10px;padding:12px;margin:10px 0}
+small{color:#5b6b75}
+</style>
+</head>
+<body>
+<header>
+<h1>❄ R.C.C.</h1>
+<div>Refrigeración y Climatización de Calidad</div>
+</header>
 <main id="app"></main>
+
 <script>
-const key='rcc_equipos_v1';
-let data=JSON.parse(localStorage.getItem(key)||'[]');
-if(!data.length)data=[{code:'RCC-001',client:'Restaurante El Nuevo Arriero',type:'Refrigerador',brand:'Ventus',model:'VRM-1300',ref:'R404A',history:[]}];
-function save(){localStorage.setItem(key,JSON.stringify(data))}
-function home(){app.innerHTML=`<div class=card><h2>Panel R.C.C.</h2><button onclick="list()">❄️ Equipos</button><button onclick="add()">➕ Agregar equipo</button><button onclick="scanInfo()">📷 Escanear QR</button><button onclick="upcoming()">📅 Próximas mantenciones</button></div><div class=card><b>Equipos registrados:</b> ${data.length}<br><small>Esta versión guarda los datos en este dispositivo.</small></div>`}
-function list(){app.innerHTML='<div class=card><h2>Equipos</h2>'+data.map((e,i)=>`<div class=item><b>${e.code}</b><br>${e.type} · ${e.brand} ${e.model}<br>${e.client}<br><button onclick="detail(${i})">Ver ficha</button></div>`).join('')+'<button onclick="home()">← Inicio</button></div>'}
-function add(){app.innerHTML=`<div class=card><h2>Nuevo equipo</h2>${['code','client','type','brand','model','ref'].map((x)=>`<label>${x}</label><input id="${x}" placeholder="${x}">`).join('')}<button onclick="create()">Guardar</button><button onclick="home()">Cancelar</button></div>`}
-function create(){let e={code:code.value,client:client.value,type:type.value,brand:brand.value,model:model.value,ref:ref.value,history:[]};data.push(e);save();list()}
-function detail(i){let e=data[i];app.innerHTML=`<div class=card><h2>${e.code}</h2><p><b>Cliente:</b> ${e.client}<br><b>Equipo:</b> ${e.type}<br><b>Marca:</b> ${e.brand}<br><b>Modelo:</b> ${e.model}<br><b>Refrigerante:</b> ${e.ref}</p><button onclick="service(${i})">🔧 Registrar servicio</button><button onclick="qr(${i})">▣ Ver QR</button><h3>Historial</h3>${e.history.length?e.history.map(h=>`<div class=item><b>${h.date} — ${h.kind}</b><br>${h.work}<br>Temp: ${h.temp} °C · Amp: ${h.amp} A<br>Baja: ${h.low} PSI · Alta: ${h.high} PSI</div>`).join(''):'Sin servicios registrados.'}<button onclick="list()">← Volver</button></div>`}
-function service(i){app.innerHTML=`<div class=card><h2>Registrar servicio — ${data[i].code}</h2><label>Fecha</label><input id=date type=date><label>Tipo</label><select id=kind><option>Mantención preventiva</option><option>Reparación</option></select><label>Trabajo realizado</label><textarea id=work></textarea><label>Temperatura °C</label><input id=temp><label>Amperaje A</label><input id=amp><label>Presión baja PSI</label><input id=low><label>Presión alta PSI</label><input id=high><button onclick="addService(${i})">Guardar</button><button onclick="detail(${i})">Cancelar</button></div>`}
-function addService(i){data[i].history.push({date:date.value,kind:kind.value,work:work.value,temp:temp.value,amp:amp.value,low:low.value,high:high.value});save();detail(i)}
-function qr(i){let e=data[i];let url=location.href.split('#')[0]+'#'+encodeURIComponent(e.code);app.innerHTML=`<div class=card><h2>QR — ${e.code}</h2><p>Este enlace identifica el equipo. El QR definitivo se conectará a la ficha pública cuando publiquemos la versión en la nube.</p><div id=qrcode></div><button onclick="detail(${i})">← Volver</button></div>`;let s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.onload=()=>new QRCode(document.getElementById('qrcode'),{text:url,width:220,height:220});document.body.appendChild(s)}
-function scanInfo(){alert('En la versión siguiente integraremos la cámara para leer directamente los QR. Por ahora puedes abrir un equipo desde Equipos.')}
-function upcoming(){app.innerHTML='<div class=card><h2>Próximas mantenciones</h2><p>La programación de fechas y recordatorios se incorporará en la siguiente versión.</p><button onclick="home()">← Inicio</button></div>'}
-home();
-</script></body></html>
+const KEY="rcc_equipos_v2";
+let equipos=JSON.parse(localStorage.getItem(KEY)||"[]");
+if(!Array.isArray(equipos)) equipos=[];
+
+if(!equipos.length){
+  equipos=[{
+    codigo:"RCC-001",
+    cliente:"Restaurante El Nuevo Arriero",
+    tipo:"Refrigerador",
+    marca:"Ventus",
+    modelo:"VRM-1300",
+    refrigerante:"R404A",
+    historial:[]
+  }];
+  guardar();
+}
+
+function guardar(){localStorage.setItem(KEY,JSON.stringify(equipos));}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+
+function inicio(){
+ app.innerHTML=`
+ <div class="card">
+  <h2>Panel R.C.C.</h2>
+  <button onclick="mostrarEquipos()">❄️ Equipos</button>
+  <button onclick="agregar()">➕ Agregar equipo</button>
+  <button onclick="escanear()">📷 Escanear QR</button>
+  <button onclick="proximas()">📅 Próximas mantenciones</button>
+ </div>
+ <div class="card"><b>Equipos registrados: ${equipos.length}</b><br><small>Los datos se guardan en este dispositivo.</small></div>`;
+}
+
+function mostrarEquipos(){
+ app.innerHTML=`
+ <div class="card"><h2>Equipos</h2>
+ ${equipos.map((e,i)=>`
+ <div class="item">
+  <div class="code">${esc(e.codigo)}</div>
+  ${esc(e.tipo)} · ${esc(e.marca)} ${esc(e.modelo)}<br>
+  ${esc(e.cliente)}
+  <button onclick="ficha(${i})">📋 Ver ficha</button>
+  <button onclick="mostrarQR(${i})">📷 Ver QR de este equipo</button>
+ </div>`).join("")}
+ <button class="secondary" onclick="inicio()">← Inicio</button>
+ </div>`;
+}
+
+function agregar(){
+ app.innerHTML=`
+ <div class="card"><h2>➕ Agregar equipo</h2>
+ <label>Código único</label><input id="codigo" placeholder="Ej: RCC-002">
+ <label>Cliente</label><input id="cliente" placeholder="Nombre del cliente">
+ <label>Tipo</label><input id="tipo" placeholder="Refrigerador">
+ <label>Marca</label><input id="marca">
+ <label>Modelo</label><input id="modelo">
+ <label>Refrigerante</label><input id="refrigerante" placeholder="R404A">
+ <button onclick="guardarEquipo()">💾 Guardar equipo</button>
+ <button class="secondary" onclick="inicio()">Cancelar</button></div>`;
+}
+
+function guardarEquipo(){
+ const codigo=document.getElementById("codigo").value.trim();
+ if(!codigo){alert("Ingresa un código único.");return;}
+ if(equipos.some(e=>String(e.codigo).toLowerCase()===codigo.toLowerCase())){
+  alert("Ese código ya existe. Usa otro, por ejemplo RCC-002.");return;
+ }
+ equipos.push({
+  codigo,
+  cliente:document.getElementById("cliente").value.trim(),
+  tipo:document.getElementById("tipo").value.trim(),
+  marca:document.getElementById("marca").value.trim(),
+  modelo:document.getElementById("modelo").value.trim(),
+  refrigerante:document.getElementById("refrigerante").value.trim(),
+  historial:[]
+ });
+ guardar(); mostrarEquipos();
+}
+
+function ficha(i){
+ const e=equipos[i]; if(!e)return;
+ app.innerHTML=`
+ <div class="card"><h2>📋 Ficha técnica</h2>
+ <p class="code">${esc(e.codigo)}</p>
+ <p><b>Cliente:</b> ${esc(e.cliente)}<br>
+ <b>Equipo:</b> ${esc(e.tipo)}<br>
+ <b>Marca:</b> ${esc(e.marca)}<br>
+ <b>Modelo:</b> ${esc(e.modelo)}<br>
+ <b>Refrigerante:</b> ${esc(e.refrigerante)}</p>
+ <button onclick="mostrarQR(${i})">📷 Generar QR de ${esc(e.codigo)}</button>
+ <button class="secondary" onclick="mostrarEquipos()">← Equipos</button>
+ </div>`;
+}
+
+function urlQR(codigo){
+ const base=location.origin+location.pathname;
+ return base+"?equipo="+encodeURIComponent(codigo);
+}
+
+function mostrarQR(i){
+ const e=equipos[i];
+ const destino=urlQR(e.codigo);
+ app.innerHTML=`
+ <div class="card">
+  <h2>📷 QR DEL EQUIPO</h2>
+  <p class="code">${esc(e.codigo)}</p>
+  <p><b>Cliente:</b> ${esc(e.cliente)}</p>
+  <div class="qr"><img id="qrimg" alt="QR ${esc(e.codigo)}"></div>
+  <div class="notice">
+   Este QR está generado exclusivamente para <b>${esc(e.codigo)}</b>.<br>
+   Al leerlo, la aplicación buscará exactamente ese código.
+  </div>
+  <small>Destino del QR:<br>${esc(destino)}</small>
+  <button onclick="ficha(${i})">← Volver a ficha</button>
+ </div>`;
+ const img=document.getElementById("qrimg");
+ img.src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="+encodeURIComponent(destino);
+}
+
+let stream=null;
+
+async function escanear(){
+ app.innerHTML=`
+ <div class="card"><h2>📷 Escanear QR</h2>
+ <div id="lector" style="text-align:center"></div>
+ <p>Apunta la cámara al QR del equipo.</p>
+ <button class="secondary" onclick="detener();inicio()">Cancelar</button></div>`;
+ if(!("BarcodeDetector" in window)){
+  app.innerHTML+=`<div class="card"><p>Este navegador no dispone del lector de QR directo. Puedes abrir el enlace del QR con la cámara del teléfono.</p></div>`;
+  return;
+ }
+ try{
+  const detector=new BarcodeDetector({formats:["qr_code"]});
+  const video=document.createElement("video");
+  video.setAttribute("playsinline","");
+  video.style.width="100%";
+  document.getElementById("lector").appendChild(video);
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
+  video.srcObject=stream; await video.play();
+  const revisar=async()=>{
+   if(!stream)return;
+   try{
+    const codes=await detector.detect(video);
+    if(codes.length){detener();abrirQR(codes[0].rawValue);return;}
+   }catch(e){}
+   requestAnimationFrame(revisar);
+  };
+  revisar();
+ }catch(e){
+  document.getElementById("lector").innerHTML="<p>No se pudo abrir la cámara. Permite el acceso a la cámara.</p>";
+ }
+}
+
+function detener(){
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+}
+
+function abrirQR(valor){
+ let codigo="";
+ try{
+  const u=new URL(valor);
+  codigo=u.searchParams.get("equipo")||"";
+ }catch(e){}
+ if(!codigo) codigo=String(valor).trim();
+ const i=equipos.findIndex(e=>String(e.codigo).toLowerCase()===String(codigo).toLowerCase());
+ if(i>=0){ficha(i);}
+ else{
+  app.innerHTML=`<div class="card"><h2>⚠️ Equipo no encontrado</h2>
+  <p>El QR contiene el código:</p><p class="code">${esc(codigo)}</p>
+  <button onclick="mostrarEquipos()">Ver equipos</button></div>`;
+ }
+}
+
+function proximas(){
+ app.innerHTML=`<div class="card"><h2>📅 Próximas mantenciones</h2>
+ <p>La programación de mantenciones se incorporará en la siguiente etapa.</p>
+ <button onclick="inicio()">← Inicio</button></div>`;
+}
+
+function abrirPorURL(){
+ const codigo=new URLSearchParams(location.search).get("equipo");
+ if(codigo){
+  const i=equipos.findIndex(e=>String(e.codigo).toLowerCase()===String(codigo).toLowerCase());
+  if(i>=0){ficha(i);return;}
+ }
+ inicio();
+}
+abrirPorURL();
+</script>
+</body>
+</html>
