@@ -1,1 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R.C.C. Refrigeración</title>
 
+<style>
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f3f7f9;
+    color:#17324d;
+}
+header{
+    background:#007c91;
+    color:white;
+    padding:22px 15px;
+    text-align:center;
+}
+header h1{
+    margin:0;
+    font-size:30px;
+}
+header p{
+    margin:6px 0 0;
+}
+.container{
+    max-width:700px;
+    margin:auto;
+    padding:15px;
+}
+.card{
+    background:white;
+    border-radius:15px;
+    padding:18px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px #0002;
+}
+button{
+    width:100%;
+    padding:14px;
+    margin:6px 0;
+    border:0;
+    border-radius:10px;
+    background:#007c91;
+    color:white;
+    font-size:16px;
+}
+button.secundario{
+    background:#526b80;
+}
+input,select,textarea{
+    width:100%;
+    padding:12px;
+    margin:5px 0 12px;
+    border:1px solid #ccd6dc;
+    border-radius:8px;
+    font-size:15px;
+}
+textarea{
+    min-height:100px;
+}
+.equipo{
+    border:1px solid #d7e1e5;
+    border-radius:10px;
+    padding:14px;
+    margin:10px 0;
+}
+.estado{
+    display:inline-block;
+    background:#dff4e5;
+    color:#18733b;
+    padding:5px 9px;
+    border-radius:8px;
+}
+.historial{
+    background:#f1f6f8;
+    border-radius:10px;
+    padding:12px;
+    margin:8px 0;
+}
+.oculto{
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>❄️ R.C.C.</h1>
+<p>Refrigeración y Climatización de Calidad</p>
+</header>
+
+<div class="container" id="app"></div>
+
+<script>
+
+let equipos = JSON.parse(localStorage.getItem("RCC_EQUIPOS")) || [
+
+{
+codigo:"RCC-001",
+cliente:"Restaurante El Nuevo Arriero",
+tipo:"Refrigerador",
+marca:"Ventus",
+modelo:"VRM-1300",
+refrigerante:"R404A",
+estado:"Operativo",
+historial:[]
+}
+
+];
+
+function guardar(){
+localStorage.setItem("RCC_EQUIPOS",JSON.stringify(equipos));
+}
+
+function inicio(){
+
+document.getElementById("app").innerHTML=`
+
+<div class="card">
+<h2>Panel principal</h2>
+
+<button onclick="mostrarEquipos()">
+❄️ Mis equipos
+</button>
+
+<button onclick="nuevoEquipo()">
+➕ Agregar equipo
+</button>
+
+<button onclick="seleccionarServicio()">
+🔧 Registrar mantención
+</button>
+
+<button onclick="proximasMantenciones()">
+📅 Próximas mantenciones
+</button>
+
+<button onclick="informacionQR()">
+📷 Sistema QR
+</button>
+
+</div>
+
+<div class="card">
+<h3>Resumen</h3>
+<p><b>Equipos registrados:</b> ${equipos.length}</p>
+<p>R.C.C. — Sistema de control técnico</p>
+</div>
+
+`;
+
+}
+
+function mostrarEquipos(){
+
+let html=`
+
+<div class="card">
+<h2>❄️ Equipos registrados</h2>
+`;
+
+equipos.forEach((e,i)=>{
+
+html+=`
+
+<div class="equipo">
+
+<h3>${e.codigo}</h3>
+
+<p>
+<b>${e.tipo}</b><br>
+${e.marca} ${e.modelo}<br>
+Cliente: ${e.cliente}<br>
+Refrigerante: ${e.refrigerante}
+</p>
+
+<span class="estado">${e.estado}</span>
+
+<button onclick="ficha(${i})">
+Ver ficha
+</button>
+
+</div>
+
+`;
+
+});
+
+html+=`
+
+<button class="secundario" onclick="inicio()">
+← Volver
+</button>
+
+</div>
+`;
+
+document.getElementById("app").innerHTML=html;
+
+}
+
+function nuevoEquipo(){
+
+document.getElementById("app").innerHTML=`
+
+<div class="card">
+
+<h2>➕ Nuevo equipo</h2>
+
+<label>Código del equipo</label>
+<input id="codigo" placeholder="Ej: RCC-002">
+
+<label>Cliente</label>
+<input id="cliente" placeholder="Nombre del cliente">
+
+<label>Tipo de equipo</label>
+<select id="tipo">
+<option>Refrigerador</option>
+<option>Congelador</option>
+<option>Vitrina refrigerada</option>
+<option>Cámara de frío</option>
+<option>Otro</option>
+</select>
+
+<label>Marca</label>
+<input id="marca">
+
+<label>Modelo</label>
+<input id="modelo">
+
+<label>Refrigerante</label>
+<input id="refrigerante" placeholder="Ej: R404A">
+
+<button onclick="guardarEquipo()">
+Guardar equipo
+</button>
+
+<button class="secundario" onclick="inicio()">
+Cancelar
+</button>
+
+</div>
+
+`;
+
+}
+
+function guardarEquipo(){
+
+let nuevo={
+
+codigo:document.getElementById("codigo").value,
+cliente:document.getElementById("cliente").value,
+tipo:document.getElementById("tipo").value,
+marca:document.getElementById("marca").value,
+modelo:document.getElementById("modelo").value,
+refrigerante:document.getElementById("refrigerante").value,
+estado:"Operativo",
+historial:[]
+
+};
+
+equipos.push(nuevo);
+
+guardar();
+
+mostrarEquipos();
+
+}
+
+function ficha(i){
+
+let e=equipos[i];
+
+let historial="";
+
+if(e.historial.length===0){
+
+historial="<p>No existen mantenciones registradas.</p>";
+
+}else{
+
+e.historial.forEach(h=>{
+
+historial+=`
+
+<div class="historial">
+
+<b>${h.fecha}</b><br>
+<b>${h.tipo}</b>
+
+<p>${h.trabajo}</p>
+
+Temperatura: ${h.temperatura} °C<br>
+Amperaje: ${h.amperaje} A<br>
+Presión baja: ${h.baja} PSI<br>
+Presión alta: ${h.alta} PSI
+
+</div>
+
+`;
+
+});
+
+}
+
+document.getElementById("app").innerHTML=`
+
+<div class="card">
+
+<h2>${e.codigo}</h2>
+
+<p>
+<b>Cliente:</b> ${e.cliente}<br>
+<b>Equipo:</b> ${e.tipo}<br>
+<b>Marca:</b> ${e.marca}<br>
+<b>Modelo:</b> ${e.modelo}<br>
+<b>Refrigerante:</b> ${e.refrigerante}
+</p>
+
+<span class="estado">${e.estado}</span>
+
+<hr>
+
+<h3>📋 Historial técnico</h3>
+
+${historial}
+
+<button onclick="nuevoServicio(${i})">
+🔧 Registrar servicio
+</button>
+
+<button onclick="mostrarQR(${i})">
+📷 QR del equipo
+</button>
+
+<button class="secundario" onclick="mostrarEquipos()">
+← Volver
+</button>
+
+</div>
+
+`;
+
+}
+
+function nuevoServicio(i){
+
+document.getElementById("app").innerHTML=`
+
+<div class="card">
+
+<h2>🔧 Registrar servicio</h2>
+
+<label>Fecha</label>
+<input type="date" id="fecha">
+
+<label>Tipo de servicio</label>
+
+<select id="tipoServicio">
+<option>Mantención preventiva</option>
+<option>Reparación</option>
+<option>Emergencia</option>
+</select>
+
+<label>Trabajo realizado</label>
+<textarea id="trabajo"></textarea>
+
+<label>Temperatura °C</label>
+<input id="temperatura">
+
+<label>Amperaje A</label>
+<input id="amperaje">
+
+<label>Presión de baja PSI</label>
+<input id="baja">
+
+<label>Presión de alta PSI</label>
+<input id="alta">
+
+<button onclick="guardarServicio(${i})">
+💾 Guardar servicio
+</button>
+
+<button class="secundario" onclick="ficha(${i})">
+Cancelar
+</button>
+
+</div>
+
+`;
+
+}
+
+function guardarServicio(i){
+
+let servicio={
+
+fecha:document.getElementById("fecha").value,
+tipo:document.getElementById("tipoServicio").value,
+trabajo:document.getElementById("trabajo").value,
+temperatura:document.getElementById("temperatura").value,
+amperaje:document.getElementById("amperage")?.value || document.getElementById("amperaje").value,
+baja:document.getElementById("baja").value,
+alta:document.getElementById("alta").value
+
+};
+
+equipos[i].historial.push(servicio);
+
+guardar();
+
+ficha(i);
+
+}
+
+function seleccionarServicio(){
+
+mostrarEquipos();
+
+}
+
+function proximasMantenciones(){
+
+document.getElementById("app").innerHTML=`
+
+<div class="card">
+
+<h2>📅 Próximas mantenciones</h2>
+
+<p>
+Esta sección permitirá programar y controlar las próximas visitas de mantenimiento.
+</p>
+
+<p>
+🔔 En
