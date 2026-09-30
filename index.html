@@ -92,7 +92,7 @@ async function migrarDatosLocales(){
         presion_alta:h.alta||h.high||"",
         observaciones:h.observaciones||""
       }));
-      const {error:he}=await sb.from("mantenimiento").insert(filas);
+    const {error:he}=await sb.from("mantenimientos").insert(filas);  
       if(he) throw he;
     }
   }
@@ -132,7 +132,7 @@ async function ficha(id){
  const e=datos.find(x=>String(x.id)===String(id));
  if(!e){lista();return}
  app.innerHTML='<div class="cargando">Cargando ficha…</div>';
- const {data:hist,error}=await sb.from("mantenimiento").select("*").eq("equipo_id",e.id).order("fecha",{ascending:false});
+ const {data:hist,error}=await sb.from("mantenimientos").select("*").eq("equipo_id",e.id).order("fecha",{ascending:false});
  if(error){alert("No se pudo cargar el historial: "+error.message);return}
  e.historial=hist||[];
  app.innerHTML=`<div class="tarjeta">
@@ -209,7 +209,7 @@ function mantencion(id){
 
 async function guardarMant(id){
  const fila={equipo_id:id,fecha:v("fecha")||null,trabajo:v("trabajo"),temperatura:v("temp"),amperaje:v("amp"),presion_baja:v("baja"),presion_alta:v("alta"),observaciones:v("observaciones")};
- const {error}=await sb.from("mantenimiento").insert(fila);
+ const {error}=await sb.from("mantenimientos").insert(fila);
  if(error){alert("No se pudo guardar la mantención: "+error.message);return;}
  await ficha(id);
 }
